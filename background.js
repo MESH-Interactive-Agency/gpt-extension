@@ -11,12 +11,14 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
           console.error(chrome.runtime.lastError);
           return;
         }
-        const conversations = result[0].result;
+        const conversations = result[0]?.result || [];
         console.log(
           'Received conversations from content script:',
           conversations
         );
-        chrome.storage.local.set({ conversations });
+        chrome.storage.local.set({ conversations }, () => {
+          console.log('Conversations stored in chrome.storage:', conversations);
+        });
       }
     );
   }
@@ -41,9 +43,16 @@ function getConversations(tabId) {
         console.error(chrome.runtime.lastError);
         return;
       }
-      const conversations = result[0].result;
+      const conversations = result[0]?.result || [];
       console.log('Received conversations from content script:', conversations);
-      chrome.storage.local.set({ conversations });
+      chrome.storage.local.set({ conversations }, () => {
+        chrome.storage.local.get('conversations', (data) => {
+          console.log(
+            'Conversations stored in chrome.storage:',
+            data.conversations
+          );
+        });
+      });
     }
   );
 }
@@ -57,5 +66,5 @@ function fetchConversations() {
     name: el.textContent,
     position: index,
   }));
-  return conversations;
+  return { conversations };
 }
