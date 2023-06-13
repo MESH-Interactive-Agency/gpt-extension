@@ -1,28 +1,45 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Conversations</title>
-  <style>
-    body {
-      width: 300px;
-      height: 600px;
-      overflow-y: scroll;
-      padding: 10px;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      margin-bottom: 10px;
-      border: 1px solid black;
-      padding: 5px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Conversations</h1>
-  <ul id="conversations"></ul>
-  <script src="popup.js"></script>
-</body>
+  <head>
+    <title>Conversations</title>
+    <style>
+      body {
+        width: 300px;
+        height: 600px;
+        overflow-y: scroll;
+        padding: 10px;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+        margin-bottom: 10px;
+        border: 1px solid black;
+        padding: 5px;
+      }
+      .folders {
+        margin-top: 20px;
+      }
+      .folder {
+        background-color: lightgray;
+        padding: 5px;
+        margin-bottom: 10px;
+      }
+      .folder ul {
+        list-style-type: none;
+        padding: 0;
+        margin-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Conversations</h1>
+    <div class="folders" id="folders-container">
+      <h2>Folders</h2>
+    </div>
+    <ul id="conversations"></ul>
+
+    <script src="popup.js"></script>
+  </body>
 </html>
