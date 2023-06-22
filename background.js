@@ -30,6 +30,7 @@ function fetchConversations() {
   });
 }
 
+
 chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.get(activeInfo.tabId, (tab) => {
     if (/^http/.test(tab.url)) {
