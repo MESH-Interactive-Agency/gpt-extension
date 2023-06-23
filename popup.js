@@ -1,29 +1,69 @@
+// Hashing function
+function hashCode(s) {
+  let hash = 0;
+  if (s.length === 0) {
+    return hash;
+  }
+  for (let i = 0; i < s.length; i++) {
+    let char = s.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}
+
 let conversationsWithFolders = [
   {
+    id: hashCode('MCU Skrull Impersonation in Secret Wars'),
     name: 'MCU Skrull Impersonation in Secret Wars',
     position: 0,
     folder: 'MCU',
   },
   {
+    id: hashCode('Understanding Diabetes & Blood Sugar'),
     name: 'Understanding Diabetes & Blood Sugar',
     position: 1,
     folder: 'Health',
   },
-  { name: 'Popup Folder Management.', position: 2, folder: 'Development' },
+  {
+    id: hashCode('Popup Folder Management.'),
+    name: 'Popup Folder Management.',
+    position: 2,
+    folder: 'Development',
+  },
   // Add more dummy conversations as needed
 ];
 
 function groupConversationsByFolder(conversations) {
-  console.log(conversations);
   let grouped = {};
   conversations.forEach((conversation) => {
     if (!grouped[conversation.folder]) {
       grouped[conversation.folder] = [];
     }
-    grouped[conversation.folder].push(conversation);
+    // Maintain the original position of each conversation
+    grouped[conversation.folder].push({
+      ...conversation,
+      position: conversations.indexOf(conversation),
+    });
   });
   return grouped;
 }
+
+// In the function where you handle moving conversations or creating new folders:
+let folders = ['MCU', 'Health', 'Development']; // Retrieve this from chrome.storage and update it as needed
+chrome.storage.local.set({ folders });
+
+// In the updateConversations function:
+chrome.storage.local.get('folders', (data) => {
+  let folders = data.folders || [];
+  let conversationsByFolder = groupConversationsByFolder(conversations);
+
+  // Create a ul element for each folder
+  folders.forEach((folder) => {
+    let folderConversations = conversationsByFolder[folder] || [];
+    // Rest of the code for creating and appending the ul element
+  });
+});
 
 function updateConversations() {
   // Get the conversations list element
@@ -77,9 +117,12 @@ function updateConversations() {
       listItem.textContent = conversation.name;
       listItem.draggable = true;
       listItem.addEventListener('click', () => {
+        let selectedConversation = conversations.find(
+          (c) => c.id === conversation.id
+        );
         chrome.runtime.sendMessage({
           type: 'CLICK_CONVERSATION',
-          position: conversation.position,
+          position: selectedConversation.position, // Use the original position of the conversation
         });
       });
 
@@ -104,4 +147,22 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     // Conversations in storage have changed, update the list
     updateConversations();
   }
+});
+
+document.getElementById('add-folder-button').addEventListener('click', () => {
+  let newFolderName = document.getElementById('new-folder-input').value;
+
+  // Add the new folder to the list of folders in chrome.storage
+  chrome.storage.local.get('folders', (data) => {
+    let folders = data.folders || [];
+    if (!folders.includes(newFolderName)) {
+      folders.push(newFolderName);
+      chrome.storage.local.set({ folders });
+
+      // Clear the input field
+      document.getElementById('new-folder-input').value = '';
+
+      updateConversations(); // Refresh the list
+    }
+  });
 });

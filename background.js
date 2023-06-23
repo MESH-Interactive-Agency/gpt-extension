@@ -1,6 +1,6 @@
-function fetchConversations() {
+async function fetchConversations() {
   return new Promise((resolve, reject) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       chrome.scripting.executeScript(
         {
           target: { tabId: tabs[0].id },
@@ -10,6 +10,7 @@ function fetchConversations() {
                 '.flex-1.text-ellipsis.max-h-5.overflow-hidden.break-all.relative'
               )
             ).map((el, index) => ({
+              id: hashCode(el.textContent), // Generate a unique id for each conversation
               name: el.textContent,
               position: index,
               folder: 'None',
@@ -18,10 +19,17 @@ function fetchConversations() {
             return { conversations };
           },
         },
-        (result) => {
+        async (result) => {
           if (chrome.runtime.lastError) {
             reject(chrome.runtime.lastError);
           } else {
+            // Store the conversations in chrome.storage before resolving the promise
+            await new Promise((resolve, reject) => {
+              chrome.storage.local.set(
+                { conversations: result[0].result.conversations },
+                resolve
+              );
+            });
             resolve(result[0].result);
           }
         }
@@ -29,7 +37,6 @@ function fetchConversations() {
     });
   });
 }
-
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.get(activeInfo.tabId, (tab) => {
